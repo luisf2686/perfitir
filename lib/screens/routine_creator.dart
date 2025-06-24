@@ -41,16 +41,16 @@ class RoutineCreator extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Convertimos los ejercicios simples a ejercicios para seguimiento con barra de progreso
-          final followerList = exercises
+          final rutina = exercises
               .map((e) => FollowerExercise(e.name, e.description, e.imagePath))
               .toList();
 
-          // Guardamos la rutina seleccionada en el servicio
-          RoutineService.setRoutine(followerList);
-
-          // Navegamos a la pantalla de seguimiento de rutina
-           Navigator.pushNamedAndRemoveUntil(context, '/welcome', (route) => false);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RoutineFollower(exercises: rutina),
+            ),
+          );
         },
         icon: const Icon(Icons.play_arrow),
         label: const Text('Iniciar'),

@@ -10,6 +10,7 @@ class FollowerExercise {
 class RoutineFollower extends StatefulWidget {
   final List<FollowerExercise> exercises;
   const RoutineFollower({super.key, required this.exercises});
+
   @override
   State<RoutineFollower> createState() => _RoutineFollowerState();
 }
@@ -18,15 +19,15 @@ class _RoutineFollowerState extends State<RoutineFollower> {
   int idx = 0, timerSec = 30;
   double prog = 0;
   Timer? _t;
-  bool done = false;
+  bool mostrarBotonFinal = false;
 
   @override
   void initState() {
     super.initState();
-    resetTimer();
+    iniciarTemporizador();
   }
 
-  void resetTimer() {
+  void iniciarTemporizador() {
     _t?.cancel();
     timerSec = 30;
     prog = 0;
@@ -36,19 +37,23 @@ class _RoutineFollowerState extends State<RoutineFollower> {
           timerSec--;
           prog += 1 / 30;
         } else {
-          next();
+          if (idx < widget.exercises.length - 1) {
+            idx++;
+            iniciarTemporizador();
+          } else {
+            // Último ejercicio, mostrar botón final
+            mostrarBotonFinal = true;
+            _t?.cancel();
+          }
         }
       });
     });
   }
 
-  void next() {
+  void siguiente() {
     if (idx < widget.exercises.length - 1) {
       setState(() => idx++);
-      resetTimer();
-    } else {
-      setState(() => done = true);
-      _t?.cancel();
+      iniciarTemporizador();
     }
   }
 
@@ -59,18 +64,7 @@ class _RoutineFollowerState extends State<RoutineFollower> {
   }
 
   @override
-  Widget build(BuildContext c) {
-    if (done) {
-      return BaseScreen(
-        title: '¡Completado!',
-        child: Center(
-          child: ElevatedButton(
-            onPressed: () => Navigator.pop(c),
-            child: const Text('Volver'),
-          ),
-        ),
-      );
-    }
+  Widget build(BuildContext context) {
     final e = widget.exercises[idx];
     return BaseScreen(
       title: e.name,
@@ -84,7 +78,17 @@ class _RoutineFollowerState extends State<RoutineFollower> {
           const SizedBox(height: 12),
           Text('Tiempo: $timerSec s'),
           const Spacer(),
-          ElevatedButton(onPressed: next, child: const Text('Siguiente')),
+
+          // Si estamos en el último ejercicio y tiempo llegó a 0
+          if (mostrarBotonFinal)
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
+              },
+              child: const Text('Volver'),
+            )
+          else
+            ElevatedButton(onPressed: siguiente, child: const Text('Siguiente')),
         ],
       ),
     );

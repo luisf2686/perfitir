@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:perfitir/colores.dart';
+import 'package:perfitir/screens/seguimiento_progreso';
 import 'screens/exercise_library.dart' as lib;
 import 'screens/community.dart';
 import 'screens/routine_creator.dart';
@@ -212,7 +213,8 @@ class MainNavigationState extends State<MainNavigation> {
     RoutineEntryPoint(), // ← Progreso: verifica si hay rutina y redirige si es necesario
     const RutinaSemanalScreen(),
     const RoutineCreator(),
-    CommunityScreen(),
+    const SeguimientoProgreso(),
+    CommunityScreen()
   ];
 
   void _onTabTapped(int index) {
@@ -237,9 +239,10 @@ class MainNavigationState extends State<MainNavigation> {
           ),
           backgroundColor: Colors.white,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Progreso'),
+            BottomNavigationBarItem(icon: Icon(Icons.timer), label: 'Progreso'),
             BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Rutina'),
             BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Entrenar'),
+            BottomNavigationBarItem(icon: Icon(Icons.local_fire_department), label: 'Indicadores'),
             BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Comunidad'),
           ],
         ),

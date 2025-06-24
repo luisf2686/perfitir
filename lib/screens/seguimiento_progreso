@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:perfitir/services/base_screen.dart';
+import 'package:perfitir/colores.dart';
+import 'package:intl/intl.dart';
+
+class SeguimientoProgreso extends StatefulWidget {
+  const SeguimientoProgreso({super.key});
+
+  @override
+  State<SeguimientoProgreso> createState() => _SeguimientoProgresoState();
+}
+
+class _SeguimientoProgresoState extends State<SeguimientoProgreso> {
+  final TextEditingController controladorPeso = TextEditingController();
+  final TextEditingController controladorAltura = TextEditingController();
+  double imc = 0.0;
+
+  // Simulación de fechas en que se hizo ejercicio
+  final List<DateTime> historialFechas = [
+    DateTime(2025, 6, 20),
+    DateTime(2025, 6, 20),
+    DateTime(2025, 6, 21),
+    DateTime(2025, 6, 22),
+    DateTime(2025, 6, 22),
+    DateTime(2025, 6, 23),
+  ];
+
+  void calcularIMC() {
+    final double peso = double.tryParse(controladorPeso.text) ?? 0.0;
+    final double altura = double.tryParse(controladorAltura.text) ?? 0.0;
+    if (altura > 0) {
+      setState(() {
+        imc = peso / ((altura / 100) * (altura / 100));
+      });
+    }
+  }
+
+  Map<String, int> obtenerResumenPorDia() {
+    Map<String, int> resumen = {};
+    for (var fecha in historialFechas) {
+      String dia = DateFormat('dd/MM').format(fecha);
+      resumen[dia] = (resumen[dia] ?? 0) + 1;
+    }
+    return resumen;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final datos = obtenerResumenPorDia();
+    final dias = datos.keys.toList();
+    final cantidades = datos.values.toList();
+
+    return BaseScreen(
+      title: 'Progreso',
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Sección IMC
+            Text(
+              'Calculadora de IMC',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: ColoresPerfitir.textoOscuro),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: controladorPeso,
+              decoration: InputDecoration(labelText: 'Peso (kg)', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: controladorAltura,
+              decoration: InputDecoration(labelText: 'Altura (cm)', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: calcularIMC,
+              style: ElevatedButton.styleFrom(backgroundColor: ColoresPerfitir.primario),
+              child: const Text('Calcular IMC', style: TextStyle(color: Colors.white)),
+            ),
+            const SizedBox(height: 10),
+            Text('Tu IMC: ${imc.toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 16, color: ColoresPerfitir.textoOscuro)),
+
+            const SizedBox(height: 30),
+            Divider(),
+
+            // Sección Gráfico
+            Text(
+              'Actividad por día',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: ColoresPerfitir.textoOscuro),
+            ),
+            const SizedBox(height: 20),
+            if (datos.isEmpty)
+              Text('Aún no hay registros de actividad.', style: TextStyle(color: Colors.grey))
+            else
+              SizedBox(
+                height: 250,
+                child: BarChart(
+                  BarChartData(
+                    barGroups: List.generate(dias.length, (index) {
+                      return BarChartGroupData(
+                        x: index,
+                        barRods: [
+                          BarChartRodData(
+                            toY: cantidades[index].toDouble(),
+                            color: ColoresPerfitir.secundario,
+                            width: 18,
+                          )
+                        ],
+                      );
+                    }),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 30,
+                          getTitlesWidget: (value, meta) {
+                            final index = value.toInt();
+                            if (index >= 0 && index < dias.length) {
+                              return SideTitleWidget(
+                                axisSide: meta.axisSide,
+                                space: 4,
+                                child: Text(
+                                  dias[index],
+                                  style: const TextStyle(fontSize: 11),
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
